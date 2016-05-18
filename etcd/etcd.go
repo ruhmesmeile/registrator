@@ -16,32 +16,25 @@ import (
 
 func init() {
 	bridge.Register(new(Factory), "etcd")
+	bridge.Register(new(Factory), "etcd-tls")
 }
 
 type Factory struct{}
 
 func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 	urls := make([]string, 0)
+
 	if uri.Host != "" {
-		urls = append(urls, "http://"+uri.Host)
+		urls = append(urls, "https://"+uri.Host)
 	} else {
-		urls = append(urls, "http://127.0.0.1:2379")
+		urls = append(urls, "https://127.0.0.1:2379")
 	}
 
-	res, err := http.Get(urls[0] + "/version")
-	if err != nil {
-		log.Fatal("etcd: error retrieving version", err)
-	}
+	tlskey := os.Getenv("ETCD_TLSKEY")
+	tlspem := os.Getenv("ETCD_TLSPEM")
+	cacert := os.Getenv("ETCD_CACERT")
 
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	if match, _ := regexp.Match("0\\.4\\.*", body); match == true {
-		log.Println("etcd: using v0 client")
-		return &EtcdAdapter{client: etcd.NewClient(urls), path: uri.Path}
-	}
-
-	return &EtcdAdapter{client2: etcd2.NewClient(urls), path: uri.Path}
+	return &EtcdAdapter{client2: etcd2.NewTLSClient(urls, tlspem, tlskey, cacert), path: uri.Path}
 }
 
 type EtcdAdapter struct {

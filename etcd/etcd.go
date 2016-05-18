@@ -33,11 +33,11 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 	tlspem := os.Getenv("ETCD_TLSPEM")
 	cacert := os.Getenv("ETCD_CACERT")
 
-	return &EtcdAdapter{client2: etcd2.NewTLSClient(urls, tlspem, tlskey, cacert), path: uri.Path}
+	return &EtcdAdapter{client2: etcd.NewTLSClient(urls, tlspem, tlskey, cacert), path: uri.Path}
 }
 
 type EtcdAdapter struct {
-	client2 *etcd2.Client
+	client2 *etcd.Client
 
 	path string
 }
@@ -46,7 +46,7 @@ func (r *EtcdAdapter) Ping() error {
 	r.syncEtcdCluster()
 
 	var err error
-	rr := etcd2.NewRawRequest("GET", "version", nil, nil)
+	rr := etcd.NewRawRequest("GET", "version", nil, nil)
 	_, err = r.client2.SendRequest(rr)
 
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"os"
 
 	etcd2 "github.com/coreos/go-etcd/etcd"
 	"github.com/gliderlabs/registrator/bridge"
@@ -15,7 +16,6 @@ import (
 )
 
 func init() {
-	bridge.Register(new(Factory), "etcd")
 	bridge.Register(new(Factory), "etcd-tls")
 }
 

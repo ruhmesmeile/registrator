@@ -10,9 +10,8 @@ import (
 	"strconv"
 	"os"
 
-	etcd2 "github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/go-etcd/etcd"
 	"github.com/gliderlabs/registrator/bridge"
-	etcd "gopkg.in/coreos/go-etcd.v0/etcd"
 )
 
 func init() {
@@ -38,7 +37,6 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 }
 
 type EtcdAdapter struct {
-	client  *etcd.Client
 	client2 *etcd2.Client
 
 	path string
@@ -48,13 +46,8 @@ func (r *EtcdAdapter) Ping() error {
 	r.syncEtcdCluster()
 
 	var err error
-	if r.client != nil {
-		rr := etcd.NewRawRequest("GET", "version", nil, nil)
-		_, err = r.client.SendRequest(rr)
-	} else {
-		rr := etcd2.NewRawRequest("GET", "version", nil, nil)
-		_, err = r.client2.SendRequest(rr)
-	}
+	rr := etcd2.NewRawRequest("GET", "version", nil, nil)
+	_, err = r.client2.SendRequest(rr)
 
 	if err != nil {
 		return err
@@ -64,11 +57,7 @@ func (r *EtcdAdapter) Ping() error {
 
 func (r *EtcdAdapter) syncEtcdCluster() {
 	var result bool
-	if r.client != nil {
-		result = r.client.SyncCluster()
-	} else {
-		result = r.client2.SyncCluster()
-	}
+	result = r.client2.SyncCluster()
 
 	if !result {
 		log.Println("etcd: sync cluster was unsuccessful")
@@ -83,11 +72,7 @@ func (r *EtcdAdapter) Register(service *bridge.Service) error {
 	addr := net.JoinHostPort(service.IP, port)
 
 	var err error
-	if r.client != nil {
-		_, err = r.client.Set(path, addr, uint64(service.TTL))
-	} else {
-		_, err = r.client2.Set(path, addr, uint64(service.TTL))
-	}
+	_, err = r.client2.Set(path, addr, uint64(service.TTL))
 
 	if err != nil {
 		log.Println("etcd: failed to register service:", err)
@@ -101,11 +86,7 @@ func (r *EtcdAdapter) Deregister(service *bridge.Service) error {
 	path := r.path + "/" + service.Name + "/" + service.ID
 
 	var err error
-	if r.client != nil {
-		_, err = r.client.Delete(path, false)
-	} else {
-		_, err = r.client2.Delete(path, false)
-	}
+	_, err = r.client2.Delete(path, false)
 
 	if err != nil {
 		log.Println("etcd: failed to deregister service:", err)

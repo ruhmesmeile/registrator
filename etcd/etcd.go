@@ -37,7 +37,7 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 }
 
 type EtcdAdapter struct {
-	client2 *etcd.Client
+	client2 etcd.Client
 
 	path string
 }

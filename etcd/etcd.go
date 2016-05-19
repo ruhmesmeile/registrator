@@ -33,7 +33,7 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
   client, err := etcd.NewTLSClient(urls, tlspem, tlskey, cacert)
 
   if err != nil {
-  	return nil
+  	log.Println("Error creating etcd2 tls client:", err)
   }
 
 	return &EtcdAdapter{client2: client, path: uri.Path}

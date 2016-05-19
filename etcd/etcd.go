@@ -36,7 +36,7 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
   client, err := etcd.NewTLSClient(urls, tlspem, tlskey, cacert)
 
   if err != nil {
-  	return err
+  	return nil
   }
 
 	return &EtcdAdapter{client2: client, path: uri.Path}

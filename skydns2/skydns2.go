@@ -19,7 +19,7 @@ type Factory struct{}
 
 func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 	urls := make([]string, 0)
-	
+
 	if uri.Host != "" {
 		urls = append(urls, "https://"+uri.Host)
 	}
@@ -33,6 +33,10 @@ func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 	cacert := os.Getenv("ETCD_CACERT")
 
 	client, err := etcd.NewTLSClient(urls, tlspem, tlskey, cacert)
+
+	if err != nil {
+  	log.Println("Error creating etcd2 tls client:", err)
+  }
 
 	return &Skydns2Adapter{client: client, path: domainPath(uri.Path[1:])}
 }

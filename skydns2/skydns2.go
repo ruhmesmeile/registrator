@@ -19,14 +19,20 @@ type Factory struct{}
 func (f *Factory) New(uri *url.URL) bridge.RegistryAdapter {
 	urls := make([]string, 0)
 	if uri.Host != "" {
-		urls = append(urls, "http://"+uri.Host)
+		urls = append(urls, "https://"+uri.Host)
 	}
 
 	if len(uri.Path) < 2 {
 		log.Fatal("skydns2: dns domain required e.g.: skydns2://<host>/<domain>")
 	}
 
-	return &Skydns2Adapter{client: etcd.NewClient(urls), path: domainPath(uri.Path[1:])}
+	tlskey := os.Getenv("ETCD_TLSKEY")
+	tlspem := os.Getenv("ETCD_TLSPEM")
+	cacert := os.Getenv("ETCD_CACERT")
+
+	client, err := etcd.NewTLSClient(urls, tlspem, tlskey, cacert)
+
+	return &Skydns2Adapter{client: client, path: domainPath(uri.Path[1:])}
 }
 
 type Skydns2Adapter struct {
